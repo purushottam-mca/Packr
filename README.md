@@ -34,13 +34,13 @@ A minimal, fast, offline-first checklist web app for preparing before events lik
 
 ### Option 1 — Direct Download
 
-1. Download or copy `packready.html`
+1. Download or copy `index.html`
 2. Open it in any modern browser
 3. Start packing
 
 ### Option 2 — Clone
 
 ```bash
-git clone https://github.com/yourusername/packready.git
-cd packready
-open packready.html
+git clone https://github.com/yourusername/Packr.git
+cd Packr
+open index.html
