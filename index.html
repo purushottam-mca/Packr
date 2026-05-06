@@ -425,7 +425,7 @@
        THEME
     ======================================================== */
     function sysTheme(){ return matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'; }
-    function applyTheme(){ document.documentElement.setAttribute('data-theme', S.theme==='light'?sysTheme():S.theme); }
+    function applyTheme(){ document.documentElement.setAttribute('data-theme', S.theme); }
     function cycleTheme(){ const o=['light','dark']; S.theme=o[(o.indexOf(S.theme)+1)%2]; applyTheme(); save(); render(); }
     function themeIco(){ return S.theme==='dark'?'☀️':'🌙'; }
 
