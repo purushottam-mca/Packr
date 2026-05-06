@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Packr</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -405,7 +406,7 @@
     /* ========================================================
        STATE
     ======================================================== */
-    let S = { events:[], activeId:null, theme:'system' };
+    let S = { events:[], activeId:null, theme:'light' };
     let addItemAt = null;
     let addSec = false;
     const LS_KEY = 'Packr_v4';
@@ -424,7 +425,7 @@
        THEME
     ======================================================== */
     function sysTheme(){ return matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'; }
-    function applyTheme(){ document.documentElement.setAttribute('data-theme', S.theme==='dark'?sysTheme():S.theme); }
+    function applyTheme(){ document.documentElement.setAttribute('data-theme', S.theme==='light'?sysTheme():S.theme); }
     function cycleTheme(){ const o=['light','dark']; S.theme=o[(o.indexOf(S.theme)+1)%2]; applyTheme(); save(); render(); }
     function themeIco(){ return S.theme==='dark'?'☀️':'🌙'; }
 
@@ -765,7 +766,7 @@
         if(e.target===e.currentTarget) hideModal();
     });
     matchMedia('(prefers-color-scheme:dark)').addEventListener('change', ()=>{
-        if(S.theme==='system'){ applyTheme(); render(); }
+        if(S.theme==='light'){ applyTheme(); render(); }
     });
 
     /* ========================================================
