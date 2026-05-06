@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Packr</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f1ec;
+            --surface: #ffffff;
+            --surface-alt: #ede8e1;
+            --section-bg: #faf8f5;
+            --accent: #c45830;
+            --accent-hover: #a84828;
+            --success: #2d7a4f;
+            --success-bg: #e2f5ea;
+            --success-border: #b8e0c8;
+            --muted: #b5a99a;
+            --muted-bg: #eeebe6;
+            --muted-border: #d5d0c8;
+            --text: #2a2420;
+            --text-2: #5a5550;
+            --text-3: #8a8279;
+            --border: #e0dbd4;
+            --shadow-1: 0 1px 3px rgba(42,36,32,0.06);
+            --shadow-2: 0 4px 16px rgba(42,36,32,0.06);
+            --shadow-3: 0 8px 30px rgba(42,36,32,0.1);
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 24px;
+            --ff: 'Syne', system-ui, sans-serif;
+            --fm: 'DM Mono', monospace;
+        }
+        [data-theme="dark"] {
+            --bg: #121110;
+            --surface: #1a1816;
+            --surface-alt: #222018;
+            --section-bg: #1e1c19;
+            --accent: #e8764a;
+            --accent-hover: #f09068;
+            --success: #5cb87a;
+            --success-bg: rgba(92,184,122,0.1);
+            --success-border: rgba(92,184,122,0.2);
+            --muted: #5a5550;
+            --muted-bg: #1e1c1a;
+            --muted-border: #333028;
+            --text: #ede8e2;
+            --text-2: #a09890;
+            --text-3: #6a6560;
+            --border: #2a2825;
+            --shadow-1: 0 1px 3px rgba(0,0,0,0.25);
+            --shadow-2: 0 4px 16px rgba(0,0,0,0.3);
+            --shadow-3: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--fm);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .app { max-width: 640px; margin: 0 auto; padding-bottom: 60px; }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 20px 14px; position: sticky; top: 0; z-index: 100;
+            background: var(--bg); transition: background 0.3s;
+        }
+        .header-left { display: flex; align-items: baseline; gap: 12px; }
+        .app-title { font-family: var(--ff); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+        .progress-badge {
+            font-size: 12px; color: var(--text-3); background: var(--surface-alt);
+            padding: 3px 10px; border-radius: 20px;
+        }
+        .progress-badge.complete { background: var(--success-bg); color: var(--success); }
+        .theme-btn {
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 1.5px solid var(--border); background: var(--surface);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0; transition: border-color 0.15s;
+        }
+        .theme-btn:hover { border-color: var(--accent); }
+
+        /* ===== EVENT BAR ===== */
+        .event-bar { display: flex; align-items: center; gap: 8px; padding: 0 20px 14px; }
+        .event-tabs { display: flex; gap: 8px; overflow-x: auto; flex: 1; padding: 2px; scrollbar-width: none; }
+        .event-tabs::-webkit-scrollbar { display: none; }
+        .event-tab {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: var(--r-xl);
+            border: 1.5px solid var(--border); background: var(--surface);
+            font-family: var(--fm); font-size: 13px; color: var(--text-2);
+            cursor: pointer; white-space: nowrap; flex-shrink: 0;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .event-tab:hover { border-color: var(--accent); color: var(--text); }
+        .event-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+        .tab-delete {
+            display: none; width: 16px; height: 16px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.25); color: inherit; font-size: 11px;
+            cursor: pointer; align-items: center; justify-content: center; padding: 0;
+        }
+        .event-tab.active .tab-delete { display: flex; }
+        .tab-delete:hover { background: rgba(255,255,255,0.4); }
+        .add-event-btn {
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 1.5px dashed var(--border); background: transparent;
+            color: var(--text-3); font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-family: var(--fm); transition: border-color 0.15s, color 0.15s;
+        }
+        .add-event-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ===== WELCOME ===== */
+        .welcome {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 80px 32px;
+            animation: fadeUp 0.5s ease both;
+        }
+        .welcome-icon { font-size: 56px; margin-bottom: 24px; }
+        .welcome h2 { font-family: var(--ff); font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+        .welcome p { color: var(--text-3); font-size: 14px; max-width: 280px; margin-bottom: 32px; line-height: 1.6; }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            margin: 0 16px 12px; background: var(--section-bg);
+            border-radius: var(--r-lg); box-shadow: var(--shadow-1);
+            overflow: hidden; animation: fadeUp 0.4s ease both;
+        }
+        .section:nth-child(2) { animation-delay: 0.04s; }
+        .section:nth-child(3) { animation-delay: 0.08s; }
+        .section:nth-child(4) { animation-delay: 0.12s; }
+        .section:nth-child(5) { animation-delay: 0.16s; }
+        .section-header {
+            display: flex; align-items: center; padding: 14px 16px;
+            cursor: pointer; user-select: none; gap: 10px;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.1s;
+        }
+        .section-header:hover { background: var(--surface-alt); }
+        .section-chevron {
+            font-size: 12px; color: var(--text-3);
+            transition: transform 0.2s; flex-shrink: 0; width: 16px; text-align: center;
+        }
+        .section.collapsed .section-chevron { transform: rotate(-90deg); }
+        .section-emoji { font-size: 18px; flex-shrink: 0; }
+        .section-title { font-family: var(--ff); font-weight: 600; font-size: 15px; flex: 1; }
+        .section-progress {
+            font-size: 12px; color: var(--text-3); padding: 2px 8px;
+            background: var(--surface-alt); border-radius: 12px; flex-shrink: 0;
+            transition: background 0.2s, color 0.2s;
+        }
+        .section-progress.complete { background: var(--success-bg); color: var(--success); }
+        .section-delete-btn {
+            width: 24px; height: 24px; border-radius: 50%; border: none;
+            background: transparent; color: var(--text-3); font-size: 14px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; flex-shrink: 0; transition: opacity 0.1s;
+        }
+        .section-header:hover .section-delete-btn { opacity: 1; }
+        .section-delete-btn:hover { background: var(--muted-bg); color: var(--accent); }
+
+        .section-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; }
+        .section.collapsed .section-body { grid-template-rows: 0fr; }
+        .section-body-inner { overflow: hidden; }
+
+        /* ===== ITEMS GRID ===== */
+        .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 4px 16px 16px; }
+        @media (min-width: 480px) { .items-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 640px) { .items-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        /* ===== ITEM CARD ===== */
+        .item-card {
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 4px;
+            padding: 14px 8px 12px; border-radius: var(--r-md);
+            border: 1.5px solid var(--border); background: var(--surface);
+            cursor: pointer; min-height: 82px;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+            transition: border-color 0.1s, background 0.1s, opacity 0.1s;
+        }
+        .item-card:hover { border-color: var(--accent); }
+        .item-card:active { transform: scale(0.96); }
+        .item-card.tap-pop { animation: tapPop 0.2s ease; }
+        .item-emoji { font-size: 22px; line-height: 1; }
+        .item-name {
+            font-size: 11px; color: var(--text-2); text-align: center;
+            line-height: 1.3; word-break: break-word;
+            transition: color 0.1s, text-decoration 0.1s;
+        }
+
+        /* Checked */
+        .item-card[data-state="checked"] {
+            background: var(--success-bg); border-color: var(--success-border);
+        }
+        .item-card[data-state="checked"] .item-name { color: var(--success); font-weight: 500; }
+        .item-card[data-state="checked"]::after {
+            content: '✓'; position: absolute; top: 5px; right: 7px;
+            font-size: 11px; font-weight: 700; color: var(--success);
+            animation: popIn 0.2s ease;
+        }
+
+        /* NA / Grey */
+        .item-card[data-state="na"] {
+            background: var(--muted-bg); border-color: var(--muted-border);
+            border-style: dashed; opacity: 0.55;
+        }
+        .item-card[data-state="na"] .item-name {
+            text-decoration: line-through; color: var(--muted);
+        }
+        .item-card[data-state="na"]::after {
+            content: '—'; position: absolute; top: 5px; right: 7px;
+            font-size: 12px; color: var(--muted); font-weight: 700;
+        }
+
+        .item-remove {
+            position: absolute; top: 4px; left: 4px;
+            width: 18px; height: 18px; border-radius: 50%; border: none;
+            background: transparent; color: var(--text-3); font-size: 13px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; padding: 0; transition: opacity 0.1s;
+        }
+        .item-card:hover .item-remove { opacity: 0.6; }
+        .item-remove:hover { opacity: 1 !important; background: var(--muted-bg); color: var(--accent); }
+
+        /* ===== ADD ROW ===== */
+        .add-row {
+            padding: 0 16px 14px; display: flex; gap: 8px; align-items: center;
+        }
+        .add-row-icon {
+            width: 44px; min-width: 44px; height: 36px;
+            padding: 0; text-align: center;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm); background: var(--surface);
+            font-size: 18px; color: var(--text); outline: none;
+            transition: border-color 0.15s;
+        }
+        .add-row-icon::placeholder { color: var(--text-3); font-size: 14px; }
+        .add-row-icon:focus { border-color: var(--accent); }
+        .add-input {
+            flex: 1; padding: 8px 12px; border: 1.5px solid var(--border);
+            border-radius: var(--r-sm); background: var(--surface);
+            font-family: var(--fm); font-size: 13px; color: var(--text); outline: none;
+            transition: border-color 0.15s;
+        }
+        .add-input::placeholder { color: var(--text-3); }
+        .add-input:focus { border-color: var(--accent); }
+        .add-confirm {
+            padding: 8px 14px; border: none; border-radius: var(--r-sm);
+            background: var(--accent); color: #fff; font-family: var(--fm);
+            font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
+        }
+        .add-confirm:hover { background: var(--accent-hover); }
+        .add-item-btn {
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            padding: 8px 12px; margin: 0 16px 14px;
+            border: 1.5px dashed var(--border); border-radius: var(--r-sm);
+            background: transparent; color: var(--text-3);
+            font-family: var(--fm); font-size: 12px; cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .add-item-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .add-section-area { padding: 8px 16px 16px; }
+        .add-section-btn {
+            width: 100%; padding: 14px;
+            border: 1.5px dashed var(--border); border-radius: var(--r-lg);
+            background: transparent; color: var(--text-3);
+            font-family: var(--fm); font-size: 13px; cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .add-section-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            padding: 24px; opacity: 0; visibility: hidden;
+            transition: opacity 0.15s, visibility 0.15s;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--surface); border-radius: var(--r-lg);
+            padding: 28px 24px 20px; width: 100%; max-width: 360px;
+            box-shadow: var(--shadow-3);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+        .modal-title { font-family: var(--ff); font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .modal-input {
+            width: 100%; padding: 10px 14px;
+            border: 1.5px solid var(--border); border-radius: var(--r-sm);
+            background: var(--surface-alt); font-family: var(--fm);
+            font-size: 14px; color: var(--text); outline: none; margin-bottom: 16px;
+            transition: border-color 0.15s;
+        }
+        .modal-input::placeholder { color: var(--text-3); }
+        .modal-input:focus { border-color: var(--accent); }
+        .modal-row { display: flex; gap: 8px; margin-bottom: 16px; }
+        .modal-row .modal-icon-input {
+            width: 52px; min-width: 52px; padding: 10px 0;
+            text-align: center; font-size: 20px;
+            border: 1.5px solid var(--border); border-radius: var(--r-sm);
+            background: var(--surface-alt); color: var(--text); outline: none;
+            transition: border-color 0.15s;
+        }
+        .modal-row .modal-icon-input::placeholder { color: var(--text-3); font-size: 14px; }
+        .modal-row .modal-icon-input:focus { border-color: var(--accent); }
+        .modal-row .modal-input { flex: 1; margin-bottom: 0; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn {
+            padding: 9px 20px; border-radius: var(--r-sm); font-family: var(--fm);
+            font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent;
+        }
+        .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-2); }
+        .btn-ghost:hover { border-color: var(--text-3); }
+        .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-danger { background: transparent; border-color: #d44; color: #d44; }
+        .btn-danger:hover { background: #d44; color: #fff; }
+
+        /* ===== CELEBRATION ===== */
+        .celebration {
+            text-align: center; padding: 24px; margin: 0 16px 16px;
+            background: var(--success-bg); border: 1.5px solid var(--success-border);
+            border-radius: var(--r-lg); animation: fadeUp 0.4s ease both;
+        }
+        .celebration-icon { font-size: 32px; margin-bottom: 8px; }
+        .celebration-text { font-family: var(--ff); font-size: 16px; font-weight: 600; color: var(--success); }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes tapPop { 0% { transform: scale(1); } 35% { transform: scale(0.92); } 100% { transform: scale(1); } }
+        @keyframes popIn { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        @media (max-width: 380px) {
+            .header { padding: 16px 16px 12px; }
+            .event-bar { padding: 0 16px 12px; }
+            .items-grid { gap: 6px; padding: 4px 12px 12px; }
+            .item-card { padding: 12px 6px 10px; min-height: 72px; }
+            .item-emoji { font-size: 20px; }
+            .item-name { font-size: 10px; }
+            .section { margin: 0 12px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app"></div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle"></div>
+            <div id="modalBody"></div>
+            <div class="modal-actions" id="modalActions"></div>
+        </div>
+    </div>
+
+    <script>
+    /* ========================================================
+       TEMPLATE
+    ======================================================== */
+    const TPL = [
+        { title:'Health & Toiletries', emoji:'💊', items:[
+            {name:'Toothbrush',emoji:'🪥'},{name:'Toothpaste',emoji:'🧴'},{name:'Floss',emoji:'🧵'},
+            {name:'Shampoo',emoji:'🧴'},{name:'Deodorant',emoji:'🧼'},{name:'Sunscreen',emoji:'☀️'},
+            {name:'Medications',emoji:'💊'},{name:'First Aid Kit',emoji:'🩹'},{name:'Hand Sanitizer',emoji:'🧼'},
+            {name:'Face Wash',emoji:'🫧'},{name:'Moisturizer',emoji:'🧴'},{name:'Lip Balm',emoji:'💋'}
+        ]},
+        { title:'Clothing', emoji:'👕', items:[
+            {name:'T-Shirts',emoji:'👕'},{name:'Pants / Shorts',emoji:'👖'},{name:'Underwear',emoji:'🩲'},
+            {name:'Socks',emoji:'🧦'},{name:'Jacket',emoji:'🧥'},{name:'Sleepwear',emoji:'😴'},
+            {name:'Swimwear',emoji:'🩱'},{name:'Hat / Cap',emoji:'🧢'},{name:'Sunglasses',emoji:'🕶️'},
+            {name:'Shoes',emoji:'👟'},{name:'Belt',emoji:'👔'}
+        ]},
+        { title:'Electronics', emoji:'🔌', items:[
+            {name:'Phone + Charger',emoji:'📱'},{name:'Power Bank',emoji:'🔋'},{name:'Earphones',emoji:'🎧'},
+            {name:'Camera',emoji:'📷'},{name:'Adapter',emoji:'🔌'},{name:'Laptop / Tablet',emoji:'💻'},
+            {name:'USB Cables',emoji:'🔗'}
+        ]},
+        { title:'Documents', emoji:'📄', items:[
+            {name:'Passport / ID',emoji:'🪪'},{name:'Tickets',emoji:'🎫'},{name:'Hotel Booking',emoji:'🏨'},
+            {name:'Insurance',emoji:'📋'},{name:'Cash / Cards',emoji:'💳'},{name:'Itinerary',emoji:'📝'}
+        ]},
+        { title:'Miscellaneous', emoji:'🎒', items:[
+            {name:'Snacks',emoji:'🍪'},{name:'Water Bottle',emoji:'🍶'},{name:'Travel Pillow',emoji:'🛋️'},
+            {name:'Eye Mask',emoji:'😴'},{name:'Notebook',emoji:'📓'},{name:'Ziplock Bags',emoji:'📦'},
+            {name:'Laundry Bag',emoji:'🧺'},{name:'Umbrella',emoji:'☂️'},{name:'Book / Kindle',emoji:'📖'}
+        ]}
+    ];
+
+    /* ========================================================
+       STATE
+    ======================================================== */
+    let S = { events:[], activeId:null, theme:'system' };
+    let addItemAt = null;
+    let addSec = false;
+    const LS_KEY = 'Packr_v4';
+
+    function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+    function load(){ try{ const r=localStorage.getItem(LS_KEY); if(r){ const p=JSON.parse(r); if(p&&Array.isArray(p.events)) S={...S,...p}; } }catch(e){} }
+
+    function uid(){ return 'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+    function ev(){ return S.events.find(e=>e.id===S.activeId)||null; }
+    function cloneTpl(){ return TPL.map(s=>({title:s.title,emoji:s.emoji,collapsed:false,items:s.items.map(i=>({name:i.name,emoji:i.emoji||'',state:'unchecked'}))})); }
+    function prog(e){ let t=0,d=0; if(!e)return{t,d}; e.sections.forEach(s=>s.items.forEach(i=>{t++;if(i.state==='checked'||i.state==='na')d++;})); return{t,d}; }
+    function secProg(s){ const t=s.items.length; return{t,d:s.items.filter(i=>i.state==='checked'||i.state==='na').length}; }
+    function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+
+    /* ========================================================
+       THEME
+    ======================================================== */
+    function sysTheme(){ return matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'; }
+    function applyTheme(){ document.documentElement.setAttribute('data-theme', S.theme==='dark'?sysTheme():S.theme); }
+    function cycleTheme(){ const o=['light','dark']; S.theme=o[(o.indexOf(S.theme)+1)%2]; applyTheme(); save(); render(); }
+    function themeIco(){ return S.theme==='dark'?'☀️':'🌙'; }
+
+    /* ========================================================
+       FULL RENDER
+    ======================================================== */
+    function render(){
+        const app = document.getElementById('app');
+        const e = ev();
+        const p = prog(e);
+        const allDone = e && p.t>0 && p.d===p.t;
+        let h = '';
+
+        // Header
+        h += '<header class="header"><div class="header-left"><span class="app-title">Packr</span>';
+        if(e) h += '<span class="progress-badge'+(allDone?' complete':'')+'" id="gProg">'+p.d+' / '+p.t+'</span>';
+        h += '</div><button class="theme-btn" id="themeBtn">'+themeIco()+'</button></header>';
+
+        // Event tabs
+        if(S.events.length){
+            h += '<div class="event-bar"><div class="event-tabs">';
+            S.events.forEach(ev2=>{
+                h += '<div class="event-tab'+(ev2.id===S.activeId?' active':'')+'" data-eid="'+ev2.id+'">';
+                h += '<span>'+esc(ev2.name)+'</span>';
+                h += '<button class="tab-delete" data-delev="'+ev2.id+'">×</button></div>';
+            });
+            h += '</div><button class="add-event-btn" id="addEvtBtn">+</button></div>';
+        }
+
+        // Body
+        if(!e){
+            h += '<div class="welcome"><div class="welcome-icon">🎒</div><h2>Packr</h2>';
+            h += '<p>Your pre-event packing companion. Never forget the essentials again.</p>';
+            h += '<button class="btn btn-primary" id="welcomeBtn" style="padding:12px 28px;font-size:14px;border-radius:var(--r-xl)">Create Your First Event</button></div>';
+        } else {
+            e.sections.forEach((sec,si)=>{
+                const sp=secProg(sec), sc=sp.t>0&&sp.d===sp.t;
+                h += '<div class="section'+(sec.collapsed?' collapsed':'')+'" data-si="'+si+'">';
+                h += '<div class="section-header"><span class="section-chevron">▾</span>';
+                h += '<span class="section-emoji">'+sec.emoji+'</span>';
+                h += '<span class="section-title">'+esc(sec.title)+'</span>';
+                h += '<span class="section-progress'+(sc?' complete':'')+'" data-sp="'+si+'">'+sp.d+'/'+sp.t+'</span>';
+                h += '<button class="section-delete-btn" data-delsec="'+si+'">×</button></div>';
+                h += '<div class="section-body"><div class="section-body-inner"><div class="items-grid">';
+                sec.items.forEach((it,ii)=>{
+                    h += '<div class="item-card" data-state="'+it.state+'" data-si="'+si+'" data-ii="'+ii+'">';
+                    h += '<button class="item-remove" data-remsi="'+si+'" data-remii="'+ii+'">×</button>';
+                    if(it.emoji) h += '<span class="item-emoji">'+it.emoji+'</span>';
+                    h += '<span class="item-name">'+esc(it.name)+'</span></div>';
+                });
+                h += '</div>';
+                if(addItemAt===si){
+                    h += '<div class="add-row">';
+                    h += '<input class="add-row-icon" id="aiIcon_'+si+'" maxlength="2" placeholder="🙂" autocomplete="off" />';
+                    h += '<input class="add-input" id="aiName_'+si+'" placeholder="Item name..." autocomplete="off" />';
+                    h += '<button class="add-confirm" data-addiconf="'+si+'">Add</button></div>';
+                } else {
+                    h += '<button class="add-item-btn" data-additem="'+si+'">+ Add item</button>';
+                }
+                h += '</div></div></div>';
+            });
+
+            if(addSec){
+                h += '<div class="section" style="margin:0 16px 12px"><div class="add-row" style="padding:14px 16px">';
+                h += '<input class="add-row-icon" id="secIcon" maxlength="2" placeholder="🙂" autocomplete="off" />';
+                h += '<input class="add-input" id="secName" placeholder="Section name..." autocomplete="off" />';
+                h += '<button class="add-confirm" id="secConf">Add</button></div></div>';
+            } else {
+                h += '<div class="add-section-area"><button class="add-section-btn" id="secBtn">+ Add Section</button></div>';
+            }
+            if(allDone) h += '<div class="celebration" id="cel"><div class="celebration-icon">🎉</div><div class="celebration-text">All packed! Ready to go.</div></div>';
+        }
+
+        app.innerHTML = h;
+        if(addItemAt!==null) setTimeout(()=>{
+            const iconInp = document.getElementById('aiIcon_'+addItemAt);
+            const nameInp = document.getElementById('aiName_'+addItemAt);
+            if(iconInp && nameInp){
+                // If no emoji yet, focus emoji; otherwise focus name
+                if(!iconInp.value) iconInp.focus(); else nameInp.focus();
+            }
+        },30);
+        if(addSec) setTimeout(()=>{
+            const si = document.getElementById('secIcon');
+            if(si && !si.value) si.focus(); else document.getElementById('secName')?.focus();
+        },30);
+    }
+
+    /* ========================================================
+       FAST DOM UPDATE
+    ======================================================== */
+    function updateCard(si, ii, newState){
+        const c = document.querySelector('.item-card[data-si="'+si+'"][data-ii="'+ii+'"]');
+        if(!c) return;
+        c.setAttribute('data-state', newState);
+        c.classList.remove('tap-pop');
+        void c.offsetWidth;
+        c.classList.add('tap-pop');
+    }
+
+    function refreshProgress(){
+        const e = ev(); if(!e) return;
+        const p = prog(e), allDone = p.t>0 && p.d===p.t;
+        const b = document.getElementById('gProg');
+        if(b){ b.textContent = p.d+' / '+p.t; b.classList.toggle('complete', allDone); }
+        e.sections.forEach((sec,si)=>{
+            const sp = secProg(sec);
+            const el = document.querySelector('[data-sp="'+si+'"]');
+            if(el){ el.textContent = sp.d+'/'+sp.t; el.classList.toggle('complete', sp.t>0 && sp.d===sp.t); }
+        });
+        const cel = document.getElementById('cel');
+        if(allDone && !cel){
+            const d = document.createElement('div');
+            d.className='celebration'; d.id='cel';
+            d.innerHTML='<div class="celebration-icon">🎉</div><div class="celebration-text">All packed! Ready to go.</div>';
+            document.getElementById('app').appendChild(d);
+        } else if(!allDone && cel) cel.remove();
+    }
+
+    /* ========================================================
+       ITEM CLICK — 3-state cycle
+    ======================================================== */
+    function cycleItem(si, ii){
+        const e = ev(); if(!e) return;
+        const item = e.sections[si].items[ii];
+        if(item.state === 'unchecked')      item.state = 'checked';
+        else if(item.state === 'checked')   item.state = 'na';
+        else                                item.state = 'unchecked';
+        updateCard(si, ii, item.state);
+        refreshProgress();
+        save();
+    }
+
+    /* ========================================================
+       CRUD
+    ======================================================== */
+    function addItem(si, emoji, name){
+        const e = ev(); if(!e||!name.trim()) return;
+        const it = {name:name.trim(), emoji:emoji.trim()||'', state:'unchecked'};
+        e.sections[si].items.push(it);
+        const ii = e.sections[si].items.length - 1;
+        const grid = document.querySelector('.section[data-si="'+si+'"] .items-grid');
+        if(grid){
+            const d = document.createElement('div');
+            d.className='item-card'; d.setAttribute('data-state','unchecked');
+            d.setAttribute('data-si',si); d.setAttribute('data-ii',ii);
+            let inner = '<button class="item-remove" data-remsi="'+si+'" data-remii="'+ii+'">×</button>';
+            if(it.emoji) inner += '<span class="item-emoji">'+it.emoji+'</span>';
+            inner += '<span class="item-name">'+esc(it.name)+'</span>';
+            d.innerHTML = inner;
+            grid.appendChild(d);
+        }
+        const eInp = document.getElementById('aiIcon_'+si);
+        const nInp = document.getElementById('aiName_'+si);
+        if(eInp) eInp.value = '';
+        if(nInp){ nInp.value=''; nInp.focus(); }
+        refreshProgress(); save();
+    }
+
+    function removeItem(si, ii){
+        const e = ev(); if(!e) return;
+        e.sections[si].items.splice(ii,1);
+        const card = document.querySelector('.item-card[data-si="'+si+'"][data-ii="'+ii+'"]');
+        if(card) card.remove();
+        document.querySelectorAll('.item-card[data-si="'+si+'"]').forEach(el=>{
+            const idx = +el.dataset.ii;
+            if(idx > ii) el.setAttribute('data-ii', idx-1);
+        });
+        document.querySelectorAll('[data-remsi="'+si+'"]').forEach(el=>{
+            const c = el.closest('.item-card');
+            if(c){ el.dataset.remsi=c.dataset.si; el.dataset.remii=c.dataset.ii; }
+        });
+        refreshProgress(); save();
+    }
+
+    function toggleSec(si){
+        const e = ev(); if(!e) return;
+        e.sections[si].collapsed = !e.sections[si].collapsed;
+        const el = document.querySelector('.section[data-si="'+si+'"]');
+        if(el) el.classList.toggle('collapsed');
+        save();
+    }
+
+    function addSecAction(emoji, title){
+        const e = ev(); if(!e||!title.trim()) return;
+        e.sections.push({title:title.trim(), emoji:emoji.trim()||'📌', collapsed:false, items:[]});
+        addSec = false; save(); render();
+    }
+
+    function deleteSec(si){
+        const e = ev(); if(!e) return;
+        e.sections.splice(si,1); addItemAt=null; save(); render();
+    }
+
+    function createEvt(name){
+        S.events.push({id:uid(), name:name.trim(), sections:cloneTpl()});
+        S.activeId = S.events[S.events.length-1].id;
+        addItemAt=null; addSec=false; save(); render();
+    }
+
+    function deleteEvt(id){
+        S.events = S.events.filter(e=>e.id!==id);
+        if(S.activeId===id) S.activeId = S.events.length?S.events[0].id:null;
+        addItemAt=null; addSec=false; save(); render();
+    }
+
+    function switchEvt(id){
+        S.activeId=id; addItemAt=null; addSec=false; save(); render();
+    }
+
+    /* ========================================================
+       MODAL
+    ======================================================== */
+    let mCb = null;
+    function showModal({title,placeholder,def,confirm,danger,hideInput,cb}){
+        const o = document.getElementById('modalOverlay');
+        document.getElementById('modalTitle').textContent = title;
+        const body = document.getElementById('modalBody');
+        body.innerHTML = '';
+        mCb = cb;
+
+        if(!hideInput){
+            const inp = document.createElement('input');
+            inp.className='modal-input'; inp.id='modalInput';
+            inp.placeholder=placeholder||''; inp.value=def||''; inp.autocomplete='off';
+            body.appendChild(inp);
+        }
+
+        const act = document.getElementById('modalActions');
+        act.innerHTML = '';
+        const c = document.createElement('button'); c.className='btn btn-ghost'; c.textContent='Cancel'; c.onclick=hideModal;
+        const ok = document.createElement('button'); ok.className=danger?'btn btn-danger':'btn btn-primary'; ok.textContent=confirm||'Confirm';
+        ok.onclick = ()=>{
+            const inp = document.getElementById('modalInput');
+            if(mCb) mCb(inp ? inp.value : '');
+            hideModal();
+        };
+        act.appendChild(c); act.appendChild(ok);
+        o.classList.add('open');
+        if(!hideInput) setTimeout(()=>document.getElementById('modalInput')?.focus(),80);
+    }
+    function hideModal(){ document.getElementById('modalOverlay').classList.remove('open'); mCb=null; }
+
+    /* ========================================================
+       EVENT DELEGATION
+    ======================================================== */
+    document.getElementById('app').addEventListener('click', e => {
+        const t = e.target;
+
+        if(t.closest('#themeBtn')) return cycleTheme();
+        if(t.closest('#addEvtBtn')||t.closest('#welcomeBtn')){
+            return showModal({title:'New Event',placeholder:'e.g. Goa Trip, US Travel...',confirm:'Create',cb:n=>{if(n&&n.trim())createEvt(n);}});
+        }
+        const delEv = t.closest('[data-delev]');
+        if(delEv){
+            const id=delEv.dataset.delev, ev2=S.events.find(x=>x.id===id);
+            return showModal({title:'Delete "'+(ev2?ev2.name:'')+'"?',confirm:'Delete',danger:true,hideInput:true,cb:()=>deleteEvt(id)});
+        }
+        const tab = t.closest('.event-tab');
+        if(tab) return switchEvt(tab.dataset.eid);
+
+        const delSecEl = t.closest('[data-delsec]');
+        if(delSecEl){
+            const si=+delSecEl.dataset.delsec, e2=ev();
+            return showModal({title:'Delete "'+(e2?e2.sections[si]?.title:'')+'"?',confirm:'Delete',danger:true,hideInput:true,cb:()=>deleteSec(si)});
+        }
+        const sh = t.closest('.section-header');
+        if(sh){ const s=sh.closest('.section'); if(s) return toggleSec(+s.dataset.si); }
+
+        const rem = t.closest('[data-remsi]');
+        if(rem) return removeItem(+rem.dataset.remsi, +rem.dataset.remii);
+
+        const card = t.closest('.item-card');
+        if(card) return cycleItem(+card.dataset.si, +card.dataset.ii);
+
+        const ai = t.closest('[data-additem]');
+        if(ai){ addItemAt=+ai.dataset.additem; render(); return; }
+        const aic = t.closest('[data-addiconf]');
+        if(aic){
+            const si=+aic.dataset.addiconf;
+            const eInp=document.getElementById('aiIcon_'+si);
+            const nInp=document.getElementById('aiName_'+si);
+            if(nInp) addItem(si, eInp?eInp.value:'', nInp.value);
+            return;
+        }
+        if(t.closest('#secBtn')){ addSec=true; render(); return; }
+        if(t.closest('#secConf')){
+            const eInp=document.getElementById('secIcon');
+            const nInp=document.getElementById('secName');
+            if(nInp) addSecAction(eInp?eInp.value:'', nInp.value);
+            return;
+        }
+    });
+
+    document.getElementById('app').addEventListener('keydown', e => {
+        if(e.key==='Enter'){
+            // Add item: Enter in name field
+            const nameInp = e.target.closest('[id^="aiName_"]');
+            if(nameInp){
+                const si = +nameInp.id.split('_')[1];
+                const eInp = document.getElementById('aiIcon_'+si);
+                return addItem(si, eInp?eInp.value:'', nameInp.value);
+            }
+            // Add item: Enter in icon field → jump to name
+            const iconInp = e.target.closest('[id^="aiIcon_"]');
+            if(iconInp){
+                const si = +iconInp.id.split('_')[1];
+                const nInp = document.getElementById('aiName_'+si);
+                if(nInp) nInp.focus();
+                return;
+            }
+            // Add section: Enter in name field
+            if(e.target.closest('#secName')){
+                const eInp = document.getElementById('secIcon');
+                const nInp = document.getElementById('secName');
+                return addSecAction(eInp?eInp.value:'', nInp.value);
+            }
+            // Add section: Enter in icon field → jump to name
+            if(e.target.closest('#secIcon')){
+                return document.getElementById('secName')?.focus();
+            }
+        }
+        if(e.key==='Escape'){
+            if(addItemAt!==null){ addItemAt=null; render(); }
+            if(addSec){ addSec=false; render(); }
+        }
+    });
+
+    document.getElementById('modalOverlay').addEventListener('keydown', e => {
+        if(e.key==='Enter' && mCb){
+            const inp = document.getElementById('modalInput');
+            mCb(inp ? inp.value : '');
+            hideModal();
+        }
+        if(e.key==='Escape') hideModal();
+    });
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+        if(e.target===e.currentTarget) hideModal();
+    });
+    matchMedia('(prefers-color-scheme:dark)').addEventListener('change', ()=>{
+        if(S.theme==='system'){ applyTheme(); render(); }
+    });
+
+    /* ========================================================
+       INIT
+    ======================================================== */
+    load(); applyTheme(); render();
+    </script>
+</body>
+</html>
