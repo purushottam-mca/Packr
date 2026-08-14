@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Packr</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#f5f1ec">
+<meta name="description" content="Packr — a minimal offline-first packing checklist.">
+<link rel="manifest" href="./manifest.json">
     <style>
         :root {
             --bg: #f5f1ec;
@@ -33,8 +33,8 @@
             --r-md: 12px;
             --r-lg: 16px;
             --r-xl: 24px;
-            --ff: 'Syne', system-ui, sans-serif;
-            --fm: 'DM Mono', monospace;
+            --ff: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --fm: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
         }
         [data-theme="dark"] {
             --bg: #121110;
@@ -772,7 +772,19 @@
     /* ========================================================
        INIT
     ======================================================== */
-    load(); applyTheme(); render();
+    if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js", {
+            scope: "./"
+        }).catch(error => {
+            console.error("Packr service worker registration failed:", error);
+        });
+    });
+}
+
+     load();
+     applyTheme();
+     render();
     </script>
 </body>
 </html>
