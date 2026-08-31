@@ -268,6 +268,18 @@
             background: var(--accent); color: #fff; font-family: var(--fm);
             font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
         }
+        .emoji-picker {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            padding: 0 16px 12px;
+        }
+        .pick {
+            width: 36px; height: 36px; padding: 0;
+            border: 1.5px solid var(--border); border-radius: var(--r-sm);
+            background: var(--surface); font-size: 17px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.15s; line-height: 1;
+        }
+        .pick:hover { border-color: var(--accent); }
         .add-confirm:hover { background: var(--accent-hover); }
         .add-item-btn {
             display: flex; align-items: center; justify-content: center; gap: 4px;
@@ -426,6 +438,41 @@
     let addSec = false;
     const LS_KEY = 'Packr_v4';
 
+    /* ========================================================
+       ICON PICKER + SUGGESTIONS
+    ======================================================== */
+    const PICKS = ['📦','👕','👟','🧴','💊','📱','🎧','🔌','📄','💳','🍪','💧'];
+    const ICON_HINTS = [
+        [/charg|cable|adapter|plug|power|batter/,'🔌'],
+        [/headphones?|earphones?|earbuds?|buds|speaker|airpod/,'🎧'],
+        [/notebook|notepad|journal|diary|pen|pencil/,'📝'],
+        [/passport|ticket|visa|license|document|insurance|itinerar|booking|reservation|map/,'📄'],
+        [/wallet|cash|card|money|bank/,'💳'],
+        [/medic|pill|tablet|vitamin|aid|bandage|prescription/,'💊'],
+        [/tooth|paste|brush|soap|shampoo|deodorant|lotion|cream|wash|sanit|comb|razor/,'🧴'],
+        [/sunscreen|sunblock/,'☀️'],
+        [/phone|mobile|laptop|ipad|camera|kindle/,'📱'],
+        [/shirt|pant|short|jean|jacket|hoodie|cloth|wear|dress|sock|underwear/,'👕'],
+        [/shoe|sandal|slipper|boot|foot/,'👟'],
+        [/snack|food|chip|cookie|biscuit|fruit|bread/,'🍪'],
+        [/water|bottle|flask|drink/,'💧'],
+        [/hat|cap|beanie|scarf|glove/,'🧢'],
+        [/glass|shades|spectacle/,'🕶️'],
+        [/umbrella|raincoat|poncho/,'☂️'],
+        [/bag|pack|luggage|suitcase|duffel/,'🎒'],
+        [/key|lock/,'🔑'],
+        [/towel/,'🧻'],
+        [/game|toy|play/,'🎲']
+    ];
+    function suggestIcon(name, fallback){
+        const s = String(name||'').toLowerCase();
+        for(let i=0;i<ICON_HINTS.length;i++) if(ICON_HINTS[i][0].test(s)) return ICON_HINTS[i][1];
+        return fallback||'📦';
+    }
+    function pickerHTML(sec){
+        return '<div class="emoji-picker" data-pksec="'+sec+'">'+PICKS.map(e=>'<button type="button" class="pick" data-pick="'+e+'">'+e+'</button>').join('')+'</div>';
+    }
+
     function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
     function load(){ try{ const r=localStorage.getItem(LS_KEY); if(r){ const p=JSON.parse(r); if(p&&Array.isArray(p.events)) S={...S,...p}; } }catch(e){} }
 
@@ -496,9 +543,10 @@
                 h += '</div>';
                 if(addItemAt===si){
                     h += '<div class="add-row">';
-                    h += '<input class="add-row-icon" id="aiIcon_'+si+'" maxlength="2" placeholder="🙂" autocomplete="off" />';
+                    h += '<input class="add-row-icon" id="aiIcon_'+si+'" maxlength="2" value="📦" autocomplete="off" />';
                     h += '<input class="add-input" id="aiName_'+si+'" placeholder="Item name..." autocomplete="off" />';
                     h += '<button class="add-confirm" data-addiconf="'+si+'">Add</button></div>';
+                    h += pickerHTML(si);
                 } else {
                     h += '<button class="add-item-btn" data-additem="'+si+'">+ Add item</button>';
                 }
@@ -507,9 +555,10 @@
 
             if(addSec){
                 h += '<div class="section" style="margin:0 16px 12px"><div class="add-row" style="padding:14px 16px">';
-                h += '<input class="add-row-icon" id="secIcon" maxlength="2" placeholder="🙂" autocomplete="off" />';
+                h += '<input class="add-row-icon" id="secIcon" maxlength="2" value="📌" autocomplete="off" />';
                 h += '<input class="add-input" id="secName" placeholder="Section name..." autocomplete="off" />';
-                h += '<button class="add-confirm" id="secConf">Add</button></div></div>';
+                h += '<button class="add-confirm" id="secConf">Add</button></div>';
+                h += pickerHTML('sec')+'</div>';
             } else {
                 h += '<div class="add-section-area"><button class="add-section-btn" id="secBtn">+ Add Section</button></div>';
             }
@@ -521,13 +570,14 @@
             const iconInp = document.getElementById('aiIcon_'+addItemAt);
             const nameInp = document.getElementById('aiName_'+addItemAt);
             if(iconInp && nameInp){
-                // If no emoji yet, focus emoji; otherwise focus name
-                if(!iconInp.value) iconInp.focus(); else nameInp.focus();
+                                // Guarantee a solid default emoji is shown the moment the row opens
+                if(!iconInp.value) iconInp.value='📦';
+                if(iconInp.value) nameInp.focus(); else iconInp.focus();
             }
         },30);
         if(addSec) setTimeout(()=>{
             const si = document.getElementById('secIcon');
-            if(si && !si.value) si.focus(); else document.getElementById('secName')?.focus();
+                        if(si){ if(!si.value) si.value='📌'; if(si.value) document.getElementById('secName')?.focus(); else si.focus(); }
         },30);
     }
 
@@ -581,25 +631,12 @@
     ======================================================== */
     function addItem(si, emoji, name){
         const e = ev(); if(!e||!name.trim()) return;
-        const it = {name:name.trim(), emoji:emoji.trim()||'', state:'unchecked'};
+        const it = {name:name.trim(), emoji:(emoji&&emoji.trim())||suggestIcon(name), state:'unchecked'};
         e.sections[si].items.push(it);
-        const ii = e.sections[si].items.length - 1;
-        const grid = document.querySelector('.section[data-si="'+si+'"] .items-grid');
-        if(grid){
-            const d = document.createElement('div');
-            d.className='item-card'; d.setAttribute('data-state','unchecked');
-            d.setAttribute('data-si',si); d.setAttribute('data-ii',ii);
-            let inner = '<button class="item-remove" data-remsi="'+si+'" data-remii="'+ii+'">×</button>';
-            if(it.emoji) inner += '<span class="item-emoji">'+it.emoji+'</span>';
-            inner += '<span class="item-name">'+esc(it.name)+'</span>';
-            d.innerHTML = inner;
-            grid.appendChild(d);
-        }
-        const eInp = document.getElementById('aiIcon_'+si);
-        const nInp = document.getElementById('aiName_'+si);
-        if(eInp) eInp.value = '';
-        if(nInp){ nInp.value=''; nInp.focus(); }
-        refreshProgress(); save();
+        save();
+        // close the add-row so the user can pick another section / add more, without pressing Escape
+        addItemAt = null;
+        render();
     }
 
     function removeItem(si, ii){
@@ -628,7 +665,7 @@
 
     function addSecAction(emoji, title){
         const e = ev(); if(!e||!title.trim()) return;
-        e.sections.push({title:title.trim(), emoji:emoji.trim()||'📌', collapsed:false, items:[]});
+        e.sections.push({title:title.trim(), emoji:emoji.trim()||suggestIcon(title,'📌'), collapsed:false, items:[]});
         addSec = false; save(); render();
     }
 
@@ -657,7 +694,7 @@
        MODAL
     ======================================================== */
     let mCb = null;
-    function showModal({title,placeholder,def,confirm,danger,hideInput,withDate,cb}){
+    function showModal({title,placeholder,def,confirm,danger,hideInput,withDate,defDate,cb}){
         const o = document.getElementById('modalOverlay');
         document.getElementById('modalTitle').textContent = title;
         const body = document.getElementById('modalBody');
@@ -672,6 +709,7 @@
             if(withDate){
                 const dinp = document.createElement('input');
                 dinp.type='date'; dinp.className='modal-input'; dinp.id='modalDate';
+                dinp.value = (typeof defDate !== 'undefined') ? defDate : new Date().toISOString().slice(0,10);
                 body.appendChild(dinp);
             }
         }
@@ -869,6 +907,20 @@
     document.getElementById('app').addEventListener('click', e => {
         const t = e.target;
 
+        const pk = t.closest('[data-pick]');
+        if(pk){
+            const box = pk.closest('.emoji-picker');
+            const key = box ? box.dataset.pksec : null;
+            const inp = key==='sec' ? document.getElementById('secIcon') : document.getElementById('aiIcon_'+key);
+            if(inp){
+                inp.value = pk.dataset.pick;
+                inp.dataset.touched = '1';
+                const n = key==='sec' ? document.getElementById('secName') : document.getElementById('aiName_'+key);
+                if(n && !n.value.trim()) n.focus();
+            }
+            return;
+        }
+
         if(t.closest('#exportBtn')) return showExport();
         if(t.closest('#themeBtn')) return cycleTheme();
         if(t.closest('#addEvtBtn')||t.closest('#welcomeBtn')){
@@ -949,6 +1001,20 @@
         }
     });
 
+    document.getElementById('app').addEventListener('input', e => {
+        const t = e.target;
+        // User typed a custom icon — stop auto-suggesting over it
+        if(t.classList && (t.classList.contains('add-row-icon') || t.id==='secIcon')){ t.dataset.touched='1'; return; }
+        // Live icon suggestion while typing the item/section name
+        if(t.id && t.id.indexOf('aiName_')===0){
+            const ic = document.getElementById('aiIcon_'+t.id.split('_')[1]);
+            if(ic && !ic.dataset.touched) ic.value = suggestIcon(t.value);
+        }
+        if(t.id==='secName'){
+            const ic = document.getElementById('secIcon');
+            if(ic && !ic.dataset.touched) ic.value = suggestIcon(t.value,'📌');
+        }
+    });
     document.getElementById('modalOverlay').addEventListener('keydown', e => {
         if(e.key==='Enter' && mCb){
             const inp = document.getElementById('modalInput');
