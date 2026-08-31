@@ -96,6 +96,7 @@
             font-size: 16px; flex-shrink: 0; transition: border-color 0.15s;
         }
         .theme-btn:hover { border-color: var(--accent); }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
 
         /* ===== EVENT BAR ===== */
         .event-bar { display: flex; align-items: center; gap: 8px; padding: 0 20px 14px; }
@@ -336,6 +337,20 @@
         .btn-danger { background: transparent; border-color: #d44; color: #d44; }
         .btn-danger:hover { background: #d44; color: #fff; }
 
+        /* ===== EXPORT ===== */
+        .export-toggle {
+            display: flex; border: 1.5px solid var(--border);
+            border-radius: var(--r-sm); overflow: hidden; margin-bottom: 12px;
+        }
+        .export-opt {
+            flex: 1; padding: 9px 0; font-family: var(--fm); font-size: 13px;
+            background: transparent; border: none; color: var(--text-3);
+            cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        .export-opt.active { background: var(--accent); color: #fff; font-weight: 500; }
+        .export-hint { font-size: 11px; color: var(--text-3); line-height: 1.5; margin-bottom: 16px; }
+        [data-theme="dark"] input[type="date"] { color-scheme: dark; }
+
         /* ===== CELEBRATION ===== */
         .celebration {
             text-align: center; padding: 24px; margin: 0 16px 16px;
@@ -442,7 +457,9 @@
         // Header
         h += '<header class="header"><div class="header-left"><span class="app-title">Packr</span>';
         if(e) h += '<span class="progress-badge'+(allDone?' complete':'')+'" id="gProg">'+p.d+' / '+p.t+'</span>';
-        h += '</div><button class="theme-btn" id="themeBtn">'+themeIco()+'</button></header>';
+        h += '</div><div class="header-actions">';
+        if(e) h += '<button class="theme-btn" id="exportBtn" title="Export list">📤</button>';
+        h += '<button class="theme-btn" id="themeBtn">'+themeIco()+'</button></div></header>';
 
         // Event tabs
         if(S.events.length){
@@ -620,8 +637,8 @@
         e.sections.splice(si,1); addItemAt=null; save(); render();
     }
 
-    function createEvt(name){
-        S.events.push({id:uid(), name:name.trim(), sections:cloneTpl()});
+    function createEvt(name, date){
+        S.events.push({id:uid(), name:name.trim(), date:date||'', sections:cloneTpl()});
         S.activeId = S.events[S.events.length-1].id;
         addItemAt=null; addSec=false; save(); render();
     }
@@ -640,7 +657,7 @@
        MODAL
     ======================================================== */
     let mCb = null;
-    function showModal({title,placeholder,def,confirm,danger,hideInput,cb}){
+    function showModal({title,placeholder,def,confirm,danger,hideInput,withDate,cb}){
         const o = document.getElementById('modalOverlay');
         document.getElementById('modalTitle').textContent = title;
         const body = document.getElementById('modalBody');
@@ -652,6 +669,11 @@
             inp.className='modal-input'; inp.id='modalInput';
             inp.placeholder=placeholder||''; inp.value=def||''; inp.autocomplete='off';
             body.appendChild(inp);
+            if(withDate){
+                const dinp = document.createElement('input');
+                dinp.type='date'; dinp.className='modal-input'; dinp.id='modalDate';
+                body.appendChild(dinp);
+            }
         }
 
         const act = document.getElementById('modalActions');
@@ -660,7 +682,8 @@
         const ok = document.createElement('button'); ok.className=danger?'btn btn-danger':'btn btn-primary'; ok.textContent=confirm||'Confirm';
         ok.onclick = ()=>{
             const inp = document.getElementById('modalInput');
-            if(mCb) mCb(inp ? inp.value : '');
+            const dinp = document.getElementById('modalDate');
+            if(mCb) mCb(inp ? inp.value : '', dinp ? dinp.value : '');
             hideModal();
         };
         act.appendChild(c); act.appendChild(ok);
@@ -670,14 +693,186 @@
     function hideModal(){ document.getElementById('modalOverlay').classList.remove('open'); mCb=null; }
 
     /* ========================================================
+       EXPORT
+    ======================================================== */
+    const STATE_META = {
+        checked:   { label:'SELECTED',   color:'#2d7a4f' },
+        na:        { label:'IGNORED',    color:'#8a8279' },
+        unchecked: { label:'NOT PACKED', color:'#c45830' }
+    };
+    function fmtDate(iso){
+        try{ return new Date(iso+'T00:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }
+        catch(err){ return iso||''; }
+    }
+    function safeName(s){ return (s||'event').replace(/[^\w\d-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'event'; }
+    function downloadBlob(blob, filename){
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob); a.download=filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    }
+    function scopedItems(items, onlySelected){ return onlySelected ? items.filter(it=>it.state==='checked') : items; }
+
+    function buildTXT(e, onlySelected){
+        const L=['PACKR — '+e.name];
+        if(e.date) L.push('Trip date: '+fmtDate(e.date));
+        L.push('Exported: '+new Date().toLocaleString());
+        L.push('');
+        L.push('='.repeat(36));
+        e.sections.forEach(s=>{
+            const items=scopedItems(s.items, onlySelected);
+            if(!items.length) return;
+            L.push('', s.emoji+' '+s.title.toUpperCase(), '-'.repeat(36));
+            items.forEach(it=>{
+                const tag=onlySelected?'X':STATE_META[it.state].label;
+                L.push('  ['+tag+'] '+(it.emoji?it.emoji+'  ':'')+it.name);
+            });
+        });
+        L.push('', 'Exported with Packr');
+        return L.join('\n');
+    }
+    function exportTXT(onlySelected){
+        const e=ev(); if(!e) return;
+        downloadBlob(new Blob([buildTXT(e, onlySelected)],{type:'text/plain;charset=utf-8'}), 'Packr-'+safeName(e.name)+'.txt');
+    }
+
+    function wrapLines(ctx, text, font, maxW){
+        ctx.font=font;
+        const words=String(text||'').split(/\s+/); const lines=[]; let cur='';
+        words.forEach(w=>{
+            const t=cur?cur+' '+w:w;
+            if(cur && ctx.measureText(t).width>maxW){ lines.push(cur); cur=w; }
+            else cur=t;
+        });
+        if(cur) lines.push(cur);
+        return lines;
+    }
+    function rr(ctx,x,y,w,h,r){
+        ctx.beginPath();
+        ctx.moveTo(x+r,y);
+        ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+        ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r);
+        ctx.closePath();
+    }
+    function exportImage(onlySelected){
+        const e=ev(); if(!e) return;
+        const sections=e.sections
+            .map(s=>({title:s.title, emoji:s.emoji, items:scopedItems(s.items, onlySelected)}))
+            .filter(s=>s.items.length);
+        if(!sections.length) return;
+        const W=640, PAD=36, SCALE=2, COLW=W-PAD*2;
+        const FF='system-ui, -apple-system, "Segoe UI", sans-serif';
+        const FM='ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+        const nameFont='700 26px '+FF, brandFont='700 12px '+FM, metaFont='13px '+FM,
+              secFont='700 15px '+FF, itemFont='13px '+FM, pillFont='700 9px '+FM, footFont='11px '+FM;
+        const PILL_W=104, PILL_H=20, LINE_H=30;
+        const p=prog(e);
+        const metaStr=[e.date?fmtDate(e.date):null, p.d+' / '+p.t+' items resolved', 'Exported '+new Date().toLocaleDateString()].filter(Boolean).join('   ·   ');
+        const meas=document.createElement('canvas').getContext('2d');
+
+        function layout(ctx, draw){
+            let y=PAD+10;
+            ctx.font=brandFont;
+            if(draw){ ctx.fillStyle='#c45830'; ctx.fillText('PACKR',PAD,y); }
+            y+=30;
+            wrapLines(ctx,e.name,nameFont,COLW).forEach(t=>{
+                ctx.font=nameFont;
+                if(draw){ ctx.fillStyle='#2a2420'; ctx.fillText(t,PAD,y); }
+                y+=34;
+            });
+            ctx.font=metaFont;
+            if(draw){ ctx.fillStyle='#8a8279'; ctx.fillText(metaStr,PAD,y); }
+            y+=20;
+            if(draw){ ctx.strokeStyle='#e0dbd4'; ctx.beginPath(); ctx.moveTo(PAD,y+6); ctx.lineTo(W-PAD,y+6); ctx.stroke(); }
+            y+=30;
+            sections.forEach(s=>{
+                ctx.font=secFont;
+                if(draw){ ctx.fillStyle='#2a2420'; ctx.fillText((s.emoji?s.emoji+'  ':'')+s.title,PAD,y); }
+                y+=LINE_H;
+                s.items.forEach(it=>{
+                    const m=STATE_META[it.state];
+                    let x=PAD+PILL_W+14;
+                    if(it.emoji){ ctx.font='14px '+FM; if(draw) ctx.fillText(it.emoji,x,y); x+=22; }
+                    ctx.font=itemFont;
+                    let nm=it.name;
+                    const maxW=W-PAD-x;
+                    if(ctx.measureText(nm).width>maxW){
+                        while(nm.length && ctx.measureText(nm+'…').width>maxW) nm=nm.slice(0,-1);
+                        nm+='…';
+                    }
+                    if(draw){
+                        ctx.fillStyle=m.color; rr(ctx,PAD,y-14,PILL_W,PILL_H,10); ctx.fill();
+                        ctx.fillStyle='#fff'; ctx.font=pillFont; ctx.textBaseline='middle';
+                        ctx.fillText(m.label,PAD+12,y-4); ctx.textBaseline='alphabetic';
+                        ctx.fillStyle='#2a2420'; ctx.font=itemFont;
+                        ctx.fillText(nm,x,y);
+                    }
+                    y+=LINE_H;
+                });
+                y+=10;
+            });
+            ctx.font=footFont;
+            if(draw){
+                ctx.fillStyle='#b5a99a'; ctx.textAlign='center';
+                ctx.fillText('Made with Packr 🎒', W/2, y+8);
+                ctx.textAlign='left';
+            }
+            return y+PAD;
+        }
+
+        const H=layout(meas,false);
+        const cv=document.createElement('canvas');
+        cv.width=W*SCALE; cv.height=H*SCALE;
+        const ctx=cv.getContext('2d');
+        ctx.scale(SCALE,SCALE);
+        ctx.fillStyle='#f5f1ec'; ctx.fillRect(0,0,W,H);
+        layout(ctx,true);
+        cv.toBlob(blob=>{
+            if(!blob) return;
+            const file=new File([blob],'Packr-'+safeName(e.name)+'.png',{type:'image/png'});
+            if(navigator.canShare&&navigator.canShare({files:[file]})) navigator.share({files:[file]}).catch(()=>downloadBlob(blob,file.name));
+            else downloadBlob(blob,file.name);
+        },'image/png');
+    }
+
+    function showExport(){
+        const e=ev(); if(!e) return;
+        mCb=null;
+        let all=true;
+        const o=document.getElementById('modalOverlay');
+        document.getElementById('modalTitle').textContent='Export "'+e.name+'"';
+        const body=document.getElementById('modalBody');
+        body.innerHTML=
+            '<div class="export-toggle">'+
+                '<button type="button" class="export-opt active" data-scope="all">All items</button>'+
+                '<button type="button" class="export-opt" data-scope="sel">Selected only</button>'+
+            '</div>'+
+            '<p class="export-hint">All items keeps every item with its status (Selected / Ignored / Not Packed). Selected only lists just what you packed.</p>';
+        const act=document.getElementById('modalActions');
+        act.innerHTML='';
+        const c=document.createElement('button'); c.className='btn btn-ghost'; c.textContent='Cancel'; c.onclick=hideModal;
+        const t=document.createElement('button'); t.className='btn btn-primary'; t.textContent='TXT'; t.onclick=()=>{ exportTXT(all); hideModal(); };
+        const img=document.createElement('button'); img.className='btn btn-primary'; img.textContent='Image'; img.onclick=()=>{ exportImage(all); hideModal(); };
+        act.appendChild(c); act.appendChild(t); act.appendChild(img);
+        body.querySelectorAll('.export-opt').forEach(b=>{
+            b.onclick=()=>{
+                all=(b.dataset.scope==='all');
+                body.querySelectorAll('.export-opt').forEach(x=>x.classList.toggle('active',x===b));
+            };
+        });
+        o.classList.add('open');
+    }
+
+    /* ========================================================
        EVENT DELEGATION
     ======================================================== */
     document.getElementById('app').addEventListener('click', e => {
         const t = e.target;
 
+        if(t.closest('#exportBtn')) return showExport();
         if(t.closest('#themeBtn')) return cycleTheme();
         if(t.closest('#addEvtBtn')||t.closest('#welcomeBtn')){
-            return showModal({title:'New Event',placeholder:'e.g. Goa Trip, US Travel...',confirm:'Create',cb:n=>{if(n&&n.trim())createEvt(n);}});
+            return showModal({title:'New Event',placeholder:'e.g. Goa Trip, US Travel...',withDate:true,confirm:'Create',cb:(n,d)=>{if(n&&n.trim())createEvt(n,d);}});
         }
         const delEv = t.closest('[data-delev]');
         if(delEv){
@@ -757,7 +952,8 @@
     document.getElementById('modalOverlay').addEventListener('keydown', e => {
         if(e.key==='Enter' && mCb){
             const inp = document.getElementById('modalInput');
-            mCb(inp ? inp.value : '');
+            const dinp = document.getElementById('modalDate');
+            mCb(inp ? inp.value : '', dinp ? dinp.value : '');
             hideModal();
         }
         if(e.key==='Escape') hideModal();

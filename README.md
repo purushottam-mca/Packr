@@ -1,46 +1,35 @@
 # 🎒 Packr
 
-A minimal, fast, offline-first checklist web app for preparing before events like trips, flights, or any personal occasion.
+A minimal, offline-first packing checklist PWA. Single HTML file, no dependencies, no build step.
 
-**Never forget the essentials again.**
+**Live:** https://purushottam-mca.github.io/Packr/
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
-![No Dependencies](https://img.shields.io/badge/Dependencies-None-brightgreen)
-![Offline Ready](https://img.shields.io/badge/Offline-Ready-blue)
+## Features
 
----
+- Multiple event checklists (trips, flights, etc.) in tabs
+- 3-tap item states: checked → N/A → unchecked
+- Custom emoji + names for items and sections
+- Collapsible sections with progress counters
+- Export the finalized list as TXT or PNG (event name + date header; all items with statuses, or selected only)
+- Light/dark mode
+- 100% client-side, data saved in `localStorage`
+- Installable PWA, works offline via service worker
 
-## ✨ Features
+## Run
 
-- **Event-Based Checklists** — Create separate checklists for different events (trips, flights, weekend stays, etc.)
-- **3-Tap State Cycle** — Each item cycles through three states on tap:
-  - 🟢 **Checked** (1st tap) — packed and ready
-  - ⚪ **Grey / NA** (2nd tap) — not applicable for this trip
-  - ⬜ **Unchecked** (3rd tap) — reset to default
-- **Emoji + Name** — Add items and sections with custom icons and names
-- **Collapsible Sections** — Organized groups that expand/collapse
-- **Dark / Light Mode** — Cycles between system, light, and dark themes (persisted)
-- **Offline-First** — 100% client-side with `localStorage` persistence
-- **Zero Dependencies** — Pure HTML + CSS + JavaScript, no build step
-- **Mobile-First UI** — Responsive grid layout that works on any screen
-- **Progress Tracking** — Per-section and global progress counters
-- **Celebration** — A little 🎉 when everything is packed
-
----
-
-## 🚀 Getting Started
-
-### Option 1 — Direct Download
-
-1. Download or copy `index.html`
-2. Open it in any modern browser
-3. Start packing
-
-### Option 2 — Clone
+Use the live URL above, or run locally:
 
 ```bash
-git clone https://github.com/yourusername/Packr.git
+git clone https://github.com/purushottam-mca/Packr.git
 cd Packr
-open index.html
+open index.html   # or just double-click it
+```
+
+## Install as app
+
+Serve over HTTPS (or localhost) and use your browser's "Install app" option.
+
+## License
+
+[MIT](LICENSE)
+
