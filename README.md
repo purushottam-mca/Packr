@@ -1,6 +1,6 @@
 # 🎒 Packr
 
-A minimal, offline-first packing checklist PWA app. Single HTML file, no dependencies, no build step.
+A minimal, offline-first packing checklist PWA app.
 
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/b92c3367-2756-41a6-9da8-b6c2cdc25731" />
 
@@ -34,4 +34,3 @@ Serve over HTTPS (or localhost) and use your browser's "Install app" option.
 ## License
 
 [MIT](LICENSE)
-
