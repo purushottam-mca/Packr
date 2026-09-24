@@ -2,10 +2,10 @@
 
 A minimal, offline-first packing checklist PWA app.
 
-<img width="700" alt="image" src="https://github.com/user-attachments/assets/b92c3367-2756-41a6-9da8-b6c2cdc25731" />
-
-**Live:** https://purushottam-mca.github.io/Packr/
-
+<a href="https://purushottam-mca.github.io/Packr/">
+  <img width="700" alt="image" src="https://github.com/user-attachments/assets/b92c3367-2756-41a6-9da8-b6c2cdc25731" />
+</a>
+ 
 ## Features
 
 - Multiple event checklists (trips, flights, etc.) in tabs
